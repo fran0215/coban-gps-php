@@ -64,7 +64,8 @@ while (true) {
                     echo "sent LOAD to client\n";
                 }
                 break;
-            case 19: // imei:359710049095095,tracker,151006012336,,F,172337.000,A,5105.9792,N,11404.9599,W,0.01,322.56,,0,0,,,  -> this is our gps data
+            case 19: // imei:359710049095095   ,tracker ,151006012336,   ,F  ,172337.000 ,A  ,5105.9792  ,N     ,11404.9599   ,W   ,0.01   ,322.56 ,    ,0    ,0    ,    ,    ,  -> this is our gps data
+                    //  *1                     ,*2      ,*3          ,*4 ,*5 ,*6         ,*7 ,*8         ,*9    ,*10          ,*11 ,*12    ,*13    ,*14 ,*15  ,*16  ,*17 ,*18 ,*19 
                 $imei = substr($tk103_data[0], 5);
                 $alarm = $tk103_data[1];
                 $gps_time = nmea_to_mysql_time($tk103_data[2]);
@@ -74,7 +75,7 @@ while (true) {
                 $speed_in_mph = (float)1.15078 * (float)$speed_in_knots ;
                 $bearing = $tk103_data[12];			
 
-                // insert_location_into_db($pdo, $imei, $gps_time, $latitude, $longitude, $speed_in_mph, $bearing);
+                insert_location_into_db($alarm, $imei, $gps_time, $latitude, $longitude, $speed_in_mph, $bearing);
 
                 if ($alarm == "help me") {
                     $response = "**,imei:" + $imei + ",E;";
@@ -96,41 +97,17 @@ while (true) {
         }
 } // end while loop
 
-function insert_location_into_db($pdo, $imei, $gps_time, $latitude, $longitude,$speed_in_mph, $bearing) {
+function insert_location_into_db($alarm, $imei, $gps_time, $latitude, $longitude,$speed_in_mph, $bearing) {
 
-    $params = array(':latitude'     => $latitude, 
-                ':longitude'        => $longitude,
-                ':user_name'        => "tk103-user",
-                ':phone_number'     => $imei,
-                ':session_id'       => "1",
-                ':speed'            => $speed_in_mph,
-                ':direction'        => $bearing,
-                ':distance'         => "0",
-                ':gps_time'         => $gps_time,
-                ':location_method'  => "",
-                ':accuracy'         => "0",
-                ':extra_info'       => "",
-                ':event_type'       => "tk103");
+    $values = "'$imei','$latitude', '$longitude','tk103-root','$imei','1','$speed_in_mph','$bearing','0','$gps_time','','0','','$alarm'";
+    $columns = "imei,latitude,longitude,user_name,phone_number,session_id,speed,direction,distance,gps_time,location_method,accuracy,extra_info,event_type";
 
-                // PLEASE NOTE, I am hardcoding the wordpress table prefix (wp_) until I can find a better way
+    error_log(json_encode($values));
+    $db = new DataBase();
 
-    $stmt = $pdo->prepare('CALL wp_save_gps_location(
-                :latitude, 
-                :longitude, 
-                :user_name,
-                :phone_number,
-                :session_id, 
-                :speed,
-                :direction, 
-                :distance, 
-                :gps_time, 
-                :location_method,
-                :accuracy, 
-                :extra_info, 
-                :event_type);');
+    $db->getConnection();
+    $db->insertOnTable("locations", $columns, $values);
 
-    $stmt->execute($params);
-    $timestamp = $stmt->fetchColumn();
     // echo "inserted into db: " . $timestamp . "\n";
 }
 
