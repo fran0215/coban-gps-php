@@ -78,7 +78,7 @@ while (true) {
                 insert_location_into_db($alarm, $imei, $gps_time, $latitude, $longitude, $speed_in_mph, $bearing);
 
                 if ($alarm == "help me") {
-                    $response = "**,imei:" + $imei + ",E;";
+                    $response = "**,imei:" . $imei . ",E;";
                 }
                 break;
             }
