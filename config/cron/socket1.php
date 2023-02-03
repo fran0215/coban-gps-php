@@ -1,6 +1,6 @@
 <?php   
 
-include "config/DataBase.php";
+include "../DataBase.php";
 
 $ip_address = "0.0.0.0";
 $port = "7331";

@@ -31,6 +31,7 @@ class DataBase
 
         $sql = "INSERT INTO $table ($columns)
         VALUES ($values)";
+        error_log($sql);
 
         if ($conn->query($sql) === TRUE) {
         return json_encode(["error" => 0, "mensaje" => "Inserted"]);

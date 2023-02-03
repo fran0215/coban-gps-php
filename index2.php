@@ -3,7 +3,7 @@
 include "config/DataBase.php";
 
 $ip_address = "0.0.0.0";
-$port = "7331";
+$port = "7332";
 
 // open a server on port 7331
 $server = stream_socket_server("tcp://$ip_address:$port", $errno, $errorMessage);
@@ -46,12 +46,12 @@ while (true) {
     // message from existing client
     foreach ($read_sockets as $socket) {
         $data = fread($socket, 128);
-        
-        echo "data: " . $data . "\n";
-        error_log("data: " . $data . "\n");
+ 
 
         $tk103_data = explode( ',', $data);
-        $response = "";		
+        $response = "";	       
+        echo "data count: ";
+        error_log(count($tk103_data));	
 
         switch (count($tk103_data)) {
             case 1: // 359710049095095 -> heartbeat requires "ON" response
@@ -69,8 +69,8 @@ while (true) {
                 $imei = substr($tk103_data[0], 5);
                 $alarm = $tk103_data[1];
                 $gps_time = nmea_to_mysql_time($tk103_data[2]);
-                $latitude = degree_to_decimal($tk103_data[7], $tk103_data[8]);				
-                $longitude = degree_to_decimal($tk103_data[9], $tk103_data[10]);
+                $latitude = degree_to_decimal((float)$tk103_data[7], (float)$tk103_data[8]);				
+                $longitude = degree_to_decimal((float)$tk103_data[9], (float)$tk103_data[10]);
                 $speed_in_knots = $tk103_data[11];
                 $speed_in_mph = (float)1.15078 * (float)$speed_in_knots ;
                 $bearing = $tk103_data[12];			
@@ -79,6 +79,8 @@ while (true) {
 
                 if ($alarm == "help me") {
                     $response = "**,imei:" . $imei . ",E;";
+                }else{
+                    $response = "**,imei:359586018966098,100";
                 }
                 break;
             }
